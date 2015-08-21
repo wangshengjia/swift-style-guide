@@ -1,26 +1,13 @@
 A guide to our Swift style and conventions.
 
-This is an attempt to encourage patterns that accomplish the following goals (in
-rough priority order):
-
- 1. Increased rigor, and decreased likelihood of programmer error
- 1. Increased clarity of intent
- 1. Reduced verbosity
- 1. Fewer debates about aesthetics
-
-If you have suggestions, please see our [contribution guidelines](CONTRIBUTING.md),
-then open a pull request. :zap:
-
-----
-
 #### Whitespace
 
  * Tabs, not spaces.
  * End files with a newline.
  * Make liberal use of vertical whitespace to divide code into logical chunks.
+ * `{` should stay in the same line
  * Don’t leave trailing whitespace.
    * Not even leading indentation on blank lines.
-
 
 #### Prefer `let`-bindings over `var`-bindings wherever possible
 
@@ -97,26 +84,6 @@ subscript(index: Int) -> T {
 ```
 
 _Rationale:_ The intent and meaning of the first version is clear, and results in less code.
-
-#### Always specify access control explicitly for top-level definitions
-
-Top-level functions, types, and variables should always have explicit access control specifiers:
-
-```swift
-public var whoopsGlobalState: Int
-internal struct TheFez {}
-private func doTheThings(things: [Thing]) {}
-```
-
-However, definitions within those can leave access control implicit, where appropriate:
-
-```swift
-internal struct TheFez {
-	var owner: Person = Joshaber()
-}
-```
-
-_Rationale:_ It's rarely appropriate for top-level definitions to be specifically `internal`, and being explicit ensures that careful thought goes into that decision. Within a definition, reusing the same access control specifier is just duplicative, and the default is usually reasonable.
 
 #### When specifying a type, always associate the colon with the identifier
 
@@ -235,33 +202,6 @@ Classes should start as `final`, and only be changed to allow subclassing if a v
 
 _Rationale:_ Composition is usually preferable to inheritance, and opting _in_ to inheritance hopefully means that more thought will be put into the decision.
 
-
-#### Omit type parameters where possible
-
-Methods of parameterized types can omit type parameters on the receiving type when they’re identical to the receiver’s. For example:
-
-```swift
-struct Composite<T> {
-	…
-	func compose(other: Composite<T>) -> Composite<T> {
-		return Composite<T>(self, other)
-	}
-}
-```
-
-could be rendered as:
-
-```swift
-struct Composite<T> {
-	…
-	func compose(other: Composite) -> Composite {
-		return Composite(self, other)
-	}
-}
-```
-
-_Rationale:_ Omitting redundant type parameters clarifies the intent, and makes it obvious by contrast when the returned type takes different type parameters.
-
 #### Use whitespace around operator definitions
 
 Use whitespace around operators when defining them. Instead of:
@@ -280,8 +220,157 @@ func <|< <A>(lhs: A, rhs: A) -> A
 
 _Rationale:_ Operators consist of punctuation characters, which can make them difficult to read when immediately followed by the punctuation for a type or value parameter list. Adding whitespace separates the two more clearly.
 
-#### Translations
+#### Prefer to use `guard` instead of `if`
 
-* [中文版](https://github.com/Artwalk/swift-style-guide/blob/master/README_CN.md)
-* [日本語版](https://github.com/jarinosuke/swift-style-guide/blob/master/README_JP.md)
-* [한국어판](https://github.com/minsOne/swift-style-guide/blob/master/README_KR.md)
+Use `guard` to do the quick fail. Instead of:
+
+```swift
+if let foo = foo {
+  // do something
+}
+```
+or
+
+```swift
+if foo == nil {
+  // throw error 
+}
+```
+write:
+
+```swift
+guard let foo = foo else {
+  // throw error 
+}
+// do somethings
+```
+
+_Rationals:_ Quick fail means less pyramide of doom which brings easier read code.
+
+#### Always chain condition after `if let` and `guard let` when possible
+
+Instead of:
+
+```swift
+if let foo = foo {
+  if let bar = bar {
+    // do somethings with foo & bar
+  }
+}
+```
+
+write:
+
+```swift
+if let foo = foo, let bar = bar {
+    // do somethings with foo & bar
+}
+```
+
+#### Prefer nested type instead of global type
+
+Instead of:
+
+```swift
+enum Bar {
+  case bar1, bar2, bar3
+}
+
+static let ConstantKey = "ConstantKey"
+
+struct Foo {}
+```
+
+write:
+
+```swift
+struct Foo {
+  static let ConstantKey = "ConstantKey"
+  enum Bar {
+    case bar1, bar2, bar3
+  }
+}
+```
+
+_Rationals:_ In this case, we have the natural namespace.
+
+#### If a function has a closure as parameter, always prefer put it to the last. Then use trailing closure.
+
+Instead of:
+
+```swift
+foo.bar({ // do something })
+```
+
+write:
+
+```swift
+foo.bar() {
+  // do something
+}
+```
+
+#### Prefer named argument instead of shorthand `$0`, `$1`
+
+Instead of:
+
+```swift
+elements.map { /* transform with $0 */ }
+```
+
+write:
+
+```swift
+elements.map { element in /* transform with element */ }
+```
+
+#### Prefer `if let param = param as? type` instead of `if param is type ... (param as! type).method()`
+
+Instead of:
+
+```swift
+if foo is FooType {
+  (foo as! FooType).bar()
+}
+```
+
+write:
+
+```swift
+if let foo = foo as? FooType {
+  foo.bar()
+}
+```
+
+#### Prefer short dot syntax when using enum if possible
+
+Instead of:
+
+```swift
+view.contentMode = UIViewContentMode.Center
+```
+
+write:
+
+```swift
+view.contentMode = .Center
+```
+
+#### Prefer `private` or `private(set)` when possible
+
+#### Non class prefixe
+
+#### Prefer to use `CGGeometry` way
+
+Instead of:
+
+```swift
+CGRectMake(0, 0, 100, 100)
+```
+
+write:
+
+```swift
+CGRect(x: 0, y: 0, width: 100, height: 100)
+```
+

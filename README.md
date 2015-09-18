@@ -374,3 +374,29 @@ write:
 CGRect(x: 0, y: 0, width: 100, height: 100)
 ```
 
+#### Function Naming
+http://ericasadun.com/2015/08/31/naming-methods-and-functions
+
+#### Prefer `do-catch` instead of `try?` or `try!`. 
+
+Use `try?` only if the reason of error is enough obvious, such as:
+
+```
+try? NSURL(string: "someinvalidurl")
+try? UIImage(named: "imagedosenotexist")
+```
+
+Otherwise:
+```
+do {
+  try SomeFunctionThrows()
+} catch error as NSError {
+
+}
+```
+
+or we can have some alternatives such as [Erica Sadun's blog](http://ericasadun.com/2015/09/03/alternatives-to-try-swiftlang/)
+
+#### Prefer `throw` an error more than let it fail silently
+
+#### Prefer `[[String:AnyObject]]?` instead of `Array<Dictionary<String, AnyObject>>?` 
